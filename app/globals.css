@@ -1,0 +1,105 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #0b0711;
+  --panel: rgba(14, 10, 22, 0.72);
+  --line: rgba(255, 194, 120, 0.18);
+  --text: #f7efe7;
+  --muted: #b9a998;
+  --gold: #e9b86d;
+  --rose: #df7a68;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  color: var(--text);
+  background:
+    radial-gradient(circle at 15% 20%, rgba(255, 170, 70, 0.12), transparent 20%),
+    radial-gradient(circle at 85% 12%, rgba(102, 185, 255, 0.12), transparent 20%),
+    radial-gradient(circle at 50% 100%, rgba(232, 110, 110, 0.08), transparent 30%),
+    linear-gradient(180deg, #0d0813 0%, #09060d 100%);
+  min-height: 100vh;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+  background-size: 38px 38px;
+  mask-image: linear-gradient(to bottom, rgba(0,0,0,0.65), transparent 90%);
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 30px 80px rgba(0,0,0,0.35);
+}
+
+.gold-line {
+  border-color: rgba(233, 184, 109, 0.35);
+}
+
+.text-muted {
+  color: var(--muted);
+}
+
+.page-shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 280px 1fr;
+}
+
+@media (max-width: 960px) {
+  .page-shell {
+    grid-template-columns: 1fr;
+  }
+}
+
+.fantasy-title {
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.glow-button {
+  transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+}
+
+.glow-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(233, 184, 109, 0.18);
+  border-color: rgba(233, 184, 109, 0.4);
+}
+
+.hero-banner {
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-banner::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.76));
+}
+
+.card-image-zoom {
+  transition: transform 0.55s ease;
+}
+
+.group:hover .card-image-zoom {
+  transform: scale(1.06);
+}

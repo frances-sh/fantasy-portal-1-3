@@ -1,0 +1,127 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum Visibility {
+  PRIVATE
+  UNLISTED
+  PUBLIC
+}
+
+enum LibraryType {
+  IMAGE
+  PDF
+  LINK
+  TEXT
+}
+
+model User {
+  id           String      @id @default(cuid())
+  name         String
+  email        String      @unique
+  passwordHash String
+  role         Role        @default(USER)
+  bio          String      @default("")
+  avatarUrl    String?
+  bannerUrl    String?
+  accentColor  String      @default("#e9b86d")
+  universes    Universe[]
+  comments     Comment[]
+  logs         AuditLog[]
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+}
+
+model Universe {
+  id          String          @id @default(cuid())
+  slug        String          @unique
+  title       String
+  description String
+  bannerUrl   String?
+  coverUrl    String?
+  ownerId     String
+  owner       User            @relation(fields: [ownerId], references: [id])
+  visibility  Visibility      @default(PRIVATE)
+  characters  Character[]
+  timeline    TimelineEntry[]
+  library     LibraryItem[]
+  shares      ShareLink[]
+  comments    Comment[]
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+}
+
+model Character {
+  id         String   @id @default(cuid())
+  universeId String
+  universe   Universe @relation(fields: [universeId], references: [id], onDelete: Cascade)
+  name       String
+  summary    String
+  imageUrl   String?
+  tags       String
+  createdAt  DateTime @default(now())
+}
+
+model TimelineEntry {
+  id           String   @id @default(cuid())
+  universeId   String
+  universe     Universe @relation(fields: [universeId], references: [id], onDelete: Cascade)
+  centuryLabel String
+  title        String
+  content      String
+  orderIndex   Int
+}
+
+model LibraryItem {
+  id          String      @id @default(cuid())
+  universeId  String
+  universe    Universe    @relation(fields: [universeId], references: [id], onDelete: Cascade)
+  title       String
+  type        LibraryType
+  fileUrl     String
+  createdById String
+  createdAt   DateTime    @default(now())
+}
+
+model ShareLink {
+  id            String    @id @default(cuid())
+  universeId     String
+  universe       Universe  @relation(fields: [universeId], references: [id], onDelete: Cascade)
+  token          String    @unique
+  allowComment   Boolean   @default(false)
+  allowDownload  Boolean   @default(false)
+  expiresAt      DateTime?
+  createdById    String
+  createdAt      DateTime  @default(now())
+}
+
+model Comment {
+  id         String   @id @default(cuid())
+  universeId String
+  universe   Universe @relation(fields: [universeId], references: [id], onDelete: Cascade)
+  authorId   String
+  author     User     @relation(fields: [authorId], references: [id])
+  content    String
+  createdAt  DateTime @default(now())
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String
+  actor      User     @relation(fields: [actorId], references: [id])
+  action     String
+  targetType String
+  targetId   String
+  createdAt  DateTime @default(now())
+}
