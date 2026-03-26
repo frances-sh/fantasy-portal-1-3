@@ -13,7 +13,7 @@ async function main() {
       passwordHash: hash,
       role: 'ADMIN',
       accentColor: '#e9b86d',
-      bio: 'Administrador do portal e curador dos universos públicos.',
+      bio: 'Administrador do portal, moderador dos chats e curador dos mundos públicos.',
       bannerUrl: '/uploads/demo-banner.svg',
       avatarUrl: '/uploads/default-avatar.svg',
     },
@@ -23,7 +23,7 @@ async function main() {
       passwordHash: hash,
       role: 'ADMIN',
       accentColor: '#e9b86d',
-      bio: 'Administrador do portal e curador dos universos públicos.',
+      bio: 'Administrador do portal, moderador dos chats e curador dos mundos públicos.',
       bannerUrl: '/uploads/demo-banner.svg',
       avatarUrl: '/uploads/default-avatar.svg',
     },
@@ -35,7 +35,7 @@ async function main() {
   const universe = await prisma.universe.upsert({
     where: { slug },
     update: {
-      description: 'Um mundo em expansão com criaturas antigas, reinos em ruínas e uma cronologia moldada por pactos, guerras e lendas.',
+      description: 'Um mundo em expansão com criaturas antigas, reinos em ruínas, curiosidades mutáveis e uma cronologia moldada por pactos, guerras e lendas.',
       bannerUrl: '/uploads/demo-banner.svg',
       coverUrl: '/uploads/demo-cover.svg',
       visibility: 'PUBLIC',
@@ -44,7 +44,7 @@ async function main() {
     create: {
       slug,
       title,
-      description: 'Um mundo em expansão com criaturas antigas, reinos em ruínas e uma cronologia moldada por pactos, guerras e lendas.',
+      description: 'Um mundo em expansão com criaturas antigas, reinos em ruínas, curiosidades mutáveis e uma cronologia moldada por pactos, guerras e lendas.',
       bannerUrl: '/uploads/demo-banner.svg',
       coverUrl: '/uploads/demo-cover.svg',
       visibility: 'PUBLIC',
@@ -87,6 +87,40 @@ async function main() {
       title: 'A Fundação das Primeiras Casas',
       content: 'Os quatro clãs fundadores dividiram o continente e ergueram santuários sobre ruínas muito mais antigas.',
       orderIndex: 1,
+    },
+  });
+
+  await prisma.loreEntry.upsert({
+    where: { id: 'demo-lore-001' },
+    update: {
+      universeId: universe.id,
+      category: 'Curiosidade',
+      title: 'As luas trocam de cor antes das marés mágicas',
+      content: 'Quando a mana do continente sobe, as luas gêmeas assumem tons âmbar e violeta, alterando a magia de sangue e as viagens marítimas.',
+      orderIndex: 1,
+    },
+    create: {
+      id: 'demo-lore-001',
+      universeId: universe.id,
+      category: 'Curiosidade',
+      title: 'As luas trocam de cor antes das marés mágicas',
+      content: 'Quando a mana do continente sobe, as luas gêmeas assumem tons âmbar e violeta, alterando a magia de sangue e as viagens marítimas.',
+      orderIndex: 1,
+    },
+  });
+
+  await prisma.comment.upsert({
+    where: { id: 'demo-comment-001' },
+    update: {
+      universeId: universe.id,
+      authorId: admin.id,
+      content: 'Bem-vindos ao chat do universo. Usem este espaço para discutir teorias, novas ideias e ajustes no lore.',
+    },
+    create: {
+      id: 'demo-comment-001',
+      universeId: universe.id,
+      authorId: admin.id,
+      content: 'Bem-vindos ao chat do universo. Usem este espaço para discutir teorias, novas ideias e ajustes no lore.',
     },
   });
 

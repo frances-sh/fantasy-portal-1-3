@@ -12,7 +12,7 @@ export default async function DashboardPage() {
 
   const universes = await prisma.universe.findMany({
     where: { ownerId: user.id },
-    include: { characters: true, shares: true },
+    include: { characters: true, shares: true, loreEntries: true, timeline: true },
     orderBy: { updatedAt: 'desc' },
   });
 
@@ -23,9 +23,12 @@ export default async function DashboardPage() {
           <div className="flex items-center justify-between gap-4">
             <div>
               <p className="text-xs uppercase tracking-[0.35em] text-amber-200/60">Painel do autor</p>
-              <h2 className="mt-2 text-2xl font-black text-amber-50">Meus universos</h2>
+              <h2 className="mt-2 text-2xl font-black text-amber-50">Meus mundos e universos</h2>
             </div>
-            <Button href="/profile" className="bg-white/5">Editar perfil</Button>
+            <div className="flex gap-3">
+              <Button href="/profile" className="bg-white/5">Editar perfil</Button>
+              {user.role === 'ADMIN' && <Button href="/admin" className="bg-white/5">Admin</Button>}
+            </div>
           </div>
 
           <div className="mt-6 grid gap-4">
@@ -35,11 +38,14 @@ export default async function DashboardPage() {
                   <div>
                     <h3 className="text-xl font-bold text-amber-50">{universe.title}</h3>
                     <p className="mt-2 text-white/55">{universe.description}</p>
+                    <p className="mt-3 text-xs uppercase tracking-[0.25em] text-white/35">
+                      {universe.characters.length} personagens • {universe.timeline.length} marcos • {universe.loreEntries.length} curiosidades
+                    </p>
                   </div>
                   <span className="rounded-full border border-amber-300/20 px-3 py-1 text-xs text-amber-100">{universe.visibility}</span>
                 </div>
                 <div className="mt-4 flex flex-wrap gap-3">
-                  <Button href={`/universes/${universe.slug}`}>Abrir</Button>
+                  <Button href={`/universes/${universe.slug}`}>Abrir editor do mundo</Button>
                   <form action="/api/share" method="post">
                     <input type="hidden" name="universeId" value={universe.id} />
                     <button className="rounded-2xl border border-white/10 px-4 py-2 text-sm font-semibold text-white/85">Gerar link</button>
@@ -56,7 +62,7 @@ export default async function DashboardPage() {
 
         <section className="grid gap-6">
           <div className="panel rounded-[32px] p-6">
-            <p className="text-xs uppercase tracking-[0.35em] text-amber-200/60">Criar universo</p>
+            <p className="text-xs uppercase tracking-[0.35em] text-amber-200/60">Criar novo mundo</p>
             <form action="/api/universes" method="post" className="mt-5 grid gap-4">
               <Input name="title" placeholder="Título do universo" required />
               <Textarea name="description" placeholder="Descrição" required />
@@ -91,11 +97,18 @@ export default async function DashboardPage() {
           </div>
 
           <div className="panel rounded-[32px] p-6">
-            <p className="text-xs uppercase tracking-[0.35em] text-amber-200/60">Upload local</p>
-            <p className="mt-2 text-sm text-white/50">Este upload funciona localmente. Para produção na Vercel, conecte um storage externo como Supabase Storage ou Vercel Blob.</p>
-            <form action="/api/upload" method="post" encType="multipart/form-data" className="mt-5 grid gap-4">
-              <input name="file" type="file" className="rounded-2xl border border-white/10 bg-black/25 p-3 text-sm" required />
-              <Button type="submit">Enviar arquivo</Button>
+            <p className="text-xs uppercase tracking-[0.35em] text-amber-200/60">Curiosidade rápida</p>
+            <form action="/api/lore" method="post" className="mt-5 grid gap-4">
+              <select name="universeId" className="w-full rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-sm" required>
+                <option value="">Selecione um universo</option>
+                {universes.map((u) => (
+                  <option key={u.id} value={u.id}>{u.title}</option>
+                ))}
+              </select>
+              <Input name="category" placeholder="Categoria: cultura, magia, fauna..." required />
+              <Input name="title" placeholder="Título da curiosidade" required />
+              <Textarea name="content" placeholder="Conteúdo" required />
+              <Button type="submit">Adicionar curiosidade</Button>
             </form>
           </div>
         </section>
