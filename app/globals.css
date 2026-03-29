@@ -17,6 +17,18 @@
 html { scroll-behavior: smooth; }
 body {
   margin: 0;
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+  color: var(--text);
+  background:
+    radial-gradient(circle at 12% 18%, rgba(83, 219, 255, 0.18), transparent 20%),
+    radial-gradient(circle at 82% 16%, rgba(165, 107, 255, 0.18), transparent 20%),
+    radial-gradient(circle at 50% 100%, rgba(165, 107, 255, 0.12), transparent 32%)
+    linear-gradient(180deg, #060811 0%, #090d18 48%, #06070d 100%);
+=======
+>>>>>>> b13ff9d (update: melhora visual e chat estilo discord)
+>>>>>>> Stashed changes
   min-height: 100vh;
   color: var(--text);
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
