@@ -9,10 +9,10 @@ type Props = {
   type?: 'button' | 'submit';
 };
 
-const base = 'glow-button inline-flex items-center justify-center rounded-2xl border px-4 py-2 text-sm font-semibold';
+const base = 'glow-button inline-flex items-center justify-center rounded-2xl border px-4 py-2.5 text-sm font-medium';
 
 export function Button({ children, className, href, type = 'button' }: Props) {
-  const styles = cn(base, 'border-amber-200/20 bg-amber-300/10 text-amber-50');
+  const styles = cn(base, 'border-white/10 bg-[#151b2b] text-slate-100');
 
   if (href) {
     return (

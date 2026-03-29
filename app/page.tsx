@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { MessageSquareMore, Sparkles, Users2 } from 'lucide-react';
 import { Shell } from '@/components/layout/Shell';
 import { prisma } from '@/lib/prisma';
 import { Button } from '@/components/ui/Button';
@@ -22,37 +23,37 @@ export default async function HomePage() {
     <Shell>
       <section className="grid gap-6">
         {featured && (
-          <div className="panel hero-banner rounded-[32px] border p-0">
-            <div className="relative h-[260px] overflow-hidden rounded-t-[32px] bg-gradient-to-r from-cyan-700/30 via-violet-400/18 to-black">
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(99,215,255,.35),transparent_25%),linear-gradient(120deg,rgba(14,10,22,.6),rgba(14,10,22,.12))]" />
-              <div className="absolute inset-0 bg-cover bg-center opacity-45" style={{ backgroundImage: `url('${featured.bannerUrl || '/uploads/demo-banner.svg'}')` }} />
-            </div>
-            <div className="relative z-10 -mt-12 grid gap-4 p-6 md:grid-cols-[1.6fr_.8fr] md:p-8">
-              <div className="frost-panel rounded-[28px] p-6 shadow-2xl shadow-black/40">
-                <p className="text-xs uppercase tracking-[0.35em] text-cyan-200/65">Universo em destaque</p>
-                <h2 className="fantasy-title mt-3 text-3xl font-black text-white md:text-5xl">{featured.title}</h2>
-                <div className="mt-4 h-px w-full bg-gradient-to-r from-cyan-300/70 to-transparent" />
-                <p className="mt-4 max-w-3xl leading-7 text-white/68">{featured.description}</p>
+          <div className="hero-shell">
+            <div className="hero-visual" style={{ backgroundImage: `linear-gradient(180deg, rgba(10,14,24,.2), rgba(10,14,24,.82)), url('${featured.bannerUrl || '/uploads/demo-banner.svg'}')` }} />
+            <div className="hero-content-grid">
+              <div className="hero-card-main">
+                <p className="hero-kicker">Destaque da semana</p>
+                <h2 className="hero-title">{featured.title}</h2>
+                <p className="hero-description">{featured.description}</p>
                 <div className="mt-6 flex flex-wrap gap-3">
                   <Button href={`/universes/${featured.slug}`}>Abrir universo</Button>
-                  <Button href={`/users/${featured.owner.id}`} className="bg-white/5">Ver autor</Button>
-                  <Button href="/chat" className="bg-cyan-400/10 border-cyan-200/15 text-cyan-50">Entrar no chat geral</Button>
+                  <Button href={`/users/${featured.owner.id}`} className="bg-white/5 text-white/85">Ver perfil do autor</Button>
+                  <Button href="/chat" className="bg-sky-500/10 border-sky-400/20 text-sky-100">Entrar na comunidade</Button>
                 </div>
               </div>
-              <div className="panel rounded-[28px] p-5">
-                <p className="text-sm font-semibold text-cyan-100">Resumo</p>
-                <div className="mt-4 grid gap-4 text-sm text-white/65">
-                  <div>
-                    <div className="text-xs uppercase tracking-[0.25em] text-cyan-200/55">Autor</div>
-                    <Link href={`/users/${featured.owner.id}`} className="mt-1 block text-base text-white/90 transition hover:text-cyan-200">{featured.owner.name}</Link>
+
+              <div className="hero-card-side">
+                <div>
+                  <div className="hero-meta-label">Criado por</div>
+                  <Link href={`/users/${featured.owner.id}`} className="hero-meta-value hover:text-sky-300">{featured.owner.name}</Link>
+                </div>
+                <div>
+                  <div className="hero-meta-label">Última atualização</div>
+                  <div className="hero-meta-value">{formatDate(featured.updatedAt)}</div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="hero-stat-box">
+                    <span className="hero-stat-number">{featured.characters.length}</span>
+                    <span className="hero-stat-label">personagens</span>
                   </div>
-                  <div>
-                    <div className="text-xs uppercase tracking-[0.25em] text-cyan-200/55">Atualizado</div>
-                    <div className="mt-1 text-base text-white/90">{formatDate(featured.updatedAt)}</div>
-                  </div>
-                  <div>
-                    <div className="text-xs uppercase tracking-[0.25em] text-cyan-200/55">Personagens</div>
-                    <div className="mt-1 text-base text-white/90">{featured.characters.length}</div>
+                  <div className="hero-stat-box">
+                    <span className="hero-stat-number">{featured.loreEntries.length}</span>
+                    <span className="hero-stat-label">curiosidades</span>
                   </div>
                 </div>
               </div>
@@ -62,38 +63,41 @@ export default async function HomePage() {
 
         <section className="grid gap-4 md:grid-cols-3">
           {[
-            ['Perfis públicos', 'Entre nos perfis dos autores, veja bio, estilo e mundos compartilhados.'],
-            ['Chat geral', 'A antiga área de comentários virou um ponto central de conversa para todo o site.'],
-            ['Chat privado', 'Achou alguém interessante? Abra o perfil e continue a conversa só com essa pessoa.'],
-          ].map(([title, desc]) => (
-            <div key={title} className="panel rounded-[28px] p-5">
-              <h3 className="text-xl font-bold text-white">{title}</h3>
-              <p className="mt-3 leading-7 text-white/60">{desc}</p>
+            { title: 'Perfis que conectam', desc: 'Entre no perfil de autores, veja bio, estilo visual e os mundos que cada um publicou.', icon: Users2 },
+            { title: 'Comunidade viva', desc: 'O antigo campo de comentários virou um chat geral mais limpo, mais rápido e melhor de acompanhar.', icon: MessageSquareMore },
+            { title: 'Atualização constante', desc: 'Mundos, curiosidades, linhas do tempo e personagens podem crescer e mudar com o tempo.', icon: Sparkles },
+          ].map(({ title, desc, icon: Icon }) => (
+            <div key={title} className="feature-card">
+              <div className="feature-icon"><Icon size={18} /></div>
+              <h3 className="text-xl font-semibold text-white">{title}</h3>
+              <p className="mt-3 leading-7 text-slate-300/80">{desc}</p>
             </div>
           ))}
         </section>
 
         <section id="worlds" className="grid gap-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-4">
             <div>
-              <p className="text-xs uppercase tracking-[0.35em] text-cyan-200/60">Coleção pública</p>
-              <h3 className="mt-2 text-2xl font-bold text-white">Mundos compartilhados</h3>
+              <p className="header-kicker">coleção pública</p>
+              <h3 className="text-2xl font-semibold text-white">Mundos compartilhados</h3>
             </div>
           </div>
           <div className="grid gap-4 lg:grid-cols-2">
             {universes.map((universe) => (
-              <Link key={universe.id} href={`/universes/${universe.slug}`} className="group panel overflow-hidden rounded-[28px] border border-white/8">
-                <div className="relative h-52 overflow-hidden bg-gradient-to-r from-cyan-900/35 via-violet-700/12 to-black">
-                  <div className="card-image-zoom absolute inset-0 bg-cover bg-center opacity-55" style={{ backgroundImage: `url('${universe.coverUrl || universe.bannerUrl || '/uploads/demo-cover.svg'}')` }} />
+              <Link key={universe.id} href={`/universes/${universe.slug}`} className="world-card group">
+                <div className="world-card-cover">
+                  <div className="card-image-zoom absolute inset-0 bg-cover bg-center opacity-60" style={{ backgroundImage: `url('${universe.coverUrl || universe.bannerUrl || '/uploads/demo-cover.svg'}')` }} />
                 </div>
-                <div className="p-5">
-                  <div className="flex items-center justify-between gap-4">
-                    <h4 className="text-xl font-bold text-white">{universe.title}</h4>
-                    <span className="rounded-full border border-cyan-200/20 px-3 py-1 text-xs text-cyan-100/80">{universe.visibility}</span>
+                <div className="world-card-body">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <h4 className="text-xl font-semibold text-white">{universe.title}</h4>
+                      <p className="mt-3 line-clamp-3 leading-7 text-slate-300/78">{universe.description}</p>
+                    </div>
+                    <span className="world-chip">{universe.visibility}</span>
                   </div>
-                  <p className="mt-3 line-clamp-3 leading-6 text-white/60">{universe.description}</p>
-                  <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-white/45">
-                    <Link href={`/users/${universe.owner.id}`} className="text-cyan-200 transition hover:text-white">{universe.owner.name}</Link>
+                  <div className="mt-5 flex flex-wrap items-center gap-3 text-sm text-slate-400">
+                    <Link href={`/users/${universe.owner.id}`} className="text-sky-300 transition hover:text-white">{universe.owner.name}</Link>
                     <span>•</span>
                     <span>{universe.characters.length} personagens</span>
                     <span>•</span>
