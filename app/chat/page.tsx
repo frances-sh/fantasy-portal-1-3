@@ -196,7 +196,7 @@ export default async function ChatPage() {
           </div>
         </section>
 
-        <aside className="discord-members hidden xl:block">
+        <aside className="discord-members hidden 2xl:block">
           <div className="discord-members-header">
             <Users size={16} />
             <span>Membros</span>

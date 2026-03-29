@@ -40,7 +40,7 @@ body::before {
 .page-shell {
   min-height: 100vh;
   display: grid;
-  grid-template-columns: 288px 1fr;
+  grid-template-columns: 280px minmax(0, 1fr);
 }
 
 @media (max-width: 1024px) {
@@ -481,7 +481,7 @@ input, textarea, select {
 
 .page-content {
   padding: 24px;
-  padding-bottom: 96px;
+  padding-bottom: 28px;
 }
 
 @media (min-width: 1024px) {
@@ -495,8 +495,8 @@ input, textarea, select {
   left: 12px;
   right: 12px;
   bottom: 12px;
-  z-index: 40;
-  display: grid;
+  z-index: 60;
+  display: none;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 8px;
   padding: 10px;
@@ -505,6 +505,9 @@ input, textarea, select {
   background: rgba(10, 14, 24, 0.9);
   backdrop-filter: blur(18px);
   box-shadow: 0 20px 50px rgba(0,0,0,.4);
+}
+@media (max-width: 1023px) {
+  .mobile-dock { display: grid; }
 }
 .mobile-dock-item {
   display: grid;
@@ -528,7 +531,7 @@ input, textarea, select {
     grid-template-columns: 250px minmax(0, 1fr);
   }
 }
-@media (min-width: 1280px) {
+@media (min-width: 1536px) {
   .discord-shell {
     grid-template-columns: 250px minmax(0, 1fr) 320px;
   }
@@ -727,4 +730,10 @@ input, textarea, select {
   .discord-main-header { padding: 16px; }
   .discord-message { padding-inline: 6px; }
   .discord-composer-wrap { padding: 0 10px 10px; }
+}
+
+@media (min-width: 1024px) {
+  .discord-shell { min-height: calc(100vh - 164px); }
+  .discord-thread { overflow-x: hidden; }
+  .discord-main { overflow: hidden; }
 }
