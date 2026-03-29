@@ -12,7 +12,7 @@ async function main() {
     update: {
       passwordHash: hash,
       role: 'ADMIN',
-      accentColor: '#e9b86d',
+      accentColor: '#63d7ff',
       bio: 'Administrador do portal, moderador dos chats e curador dos mundos públicos.',
       bannerUrl: '/uploads/demo-banner.svg',
       avatarUrl: '/uploads/default-avatar.svg',
@@ -22,8 +22,29 @@ async function main() {
       email: adminEmail,
       passwordHash: hash,
       role: 'ADMIN',
-      accentColor: '#e9b86d',
+      accentColor: '#63d7ff',
       bio: 'Administrador do portal, moderador dos chats e curador dos mundos públicos.',
+      bannerUrl: '/uploads/demo-banner.svg',
+      avatarUrl: '/uploads/default-avatar.svg',
+    },
+  });
+
+  const guestHash = await bcrypt.hash('12345678', 10);
+  const guest = await prisma.user.upsert({
+    where: { email: 'autor-demo@portal.com' },
+    update: {
+      passwordHash: guestHash,
+      accentColor: '#a56bff',
+      bio: 'Autora de mundos fantásticos, curiosidades estranhas e teorias longas no chat geral.',
+      bannerUrl: '/uploads/demo-banner.svg',
+      avatarUrl: '/uploads/default-avatar.svg',
+    },
+    create: {
+      name: 'Lira',
+      email: 'autor-demo@portal.com',
+      passwordHash: guestHash,
+      accentColor: '#a56bff',
+      bio: 'Autora de mundos fantásticos, curiosidades estranhas e teorias longas no chat geral.',
       bannerUrl: '/uploads/demo-banner.svg',
       avatarUrl: '/uploads/default-avatar.svg',
     },
@@ -114,13 +135,54 @@ async function main() {
     update: {
       universeId: universe.id,
       authorId: admin.id,
-      content: 'Bem-vindos ao chat do universo. Usem este espaço para discutir teorias, novas ideias e ajustes no lore.',
+      content: 'Registro antigo do universo, mantido apenas por compatibilidade da base.',
     },
     create: {
       id: 'demo-comment-001',
       universeId: universe.id,
       authorId: admin.id,
-      content: 'Bem-vindos ao chat do universo. Usem este espaço para discutir teorias, novas ideias e ajustes no lore.',
+      content: 'Registro antigo do universo, mantido apenas por compatibilidade da base.',
+    },
+  });
+
+  await prisma.globalMessage.upsert({
+    where: { id: 'demo-global-001' },
+    update: {
+      authorId: admin.id,
+      content: 'Bem-vindos ao chat geral. Agora as conversas não ficam presas a um mundo só.',
+    },
+    create: {
+      id: 'demo-global-001',
+      authorId: admin.id,
+      content: 'Bem-vindos ao chat geral. Agora as conversas não ficam presas a um mundo só.',
+    },
+  });
+
+  await prisma.globalMessage.upsert({
+    where: { id: 'demo-global-002' },
+    update: {
+      authorId: guest.id,
+      content: 'Se quiserem trocar ideia sobre construção de mundo, me chamem no perfil ou no privado.',
+    },
+    create: {
+      id: 'demo-global-002',
+      authorId: guest.id,
+      content: 'Se quiserem trocar ideia sobre construção de mundo, me chamem no perfil ou no privado.',
+    },
+  });
+
+  await prisma.privateMessage.upsert({
+    where: { id: 'demo-private-001' },
+    update: {
+      senderId: admin.id,
+      recipientId: guest.id,
+      content: 'Mensagem privada de demonstração para mostrar a nova área reservada.',
+    },
+    create: {
+      id: 'demo-private-001',
+      senderId: admin.id,
+      recipientId: guest.id,
+      content: 'Mensagem privada de demonstração para mostrar a nova área reservada.',
     },
   });
 

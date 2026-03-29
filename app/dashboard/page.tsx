@@ -26,6 +26,7 @@ export default async function DashboardPage() {
               <h2 className="mt-2 text-2xl font-black text-amber-50">Meus mundos e universos</h2>
             </div>
             <div className="flex gap-3">
+              <Button href="/chat" className="bg-cyan-400/10 border-cyan-200/15 text-cyan-50">Chat geral</Button>
               <Button href="/profile" className="bg-white/5">Editar perfil</Button>
               {user.role === 'ADMIN' && <Button href="/admin" className="bg-white/5">Admin</Button>}
             </div>

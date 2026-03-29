@@ -72,6 +72,7 @@ export default async function ProfilePage() {
             </label>
             <div className="flex flex-wrap gap-3">
               <Button type="submit">Salvar perfil</Button>
+              <Button href={`/users/${user.id}`} className="bg-cyan-400/10 border-cyan-200/15 text-cyan-50">Ver perfil público</Button>
               <Button href="/dashboard" className="bg-white/5">Voltar ao painel</Button>
             </div>
           </form>

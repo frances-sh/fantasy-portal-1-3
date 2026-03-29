@@ -9,21 +9,23 @@ export default async function AdminPage() {
   if (!user) redirect('/login');
   if (user.role !== 'ADMIN') redirect('/dashboard');
 
-  const [users, universes, comments, shares] = await Promise.all([
+  const [users, universes, globalMessages, privateMessages, shares] = await Promise.all([
     prisma.user.findMany({ include: { universes: true }, orderBy: { createdAt: 'desc' } }),
     prisma.universe.findMany({ include: { owner: true, loreEntries: true, characters: true }, orderBy: { updatedAt: 'desc' } }),
-    prisma.comment.count(),
+    prisma.globalMessage.count(),
+    prisma.privateMessage.count(),
     prisma.shareLink.count(),
   ]);
 
   return (
     <Shell>
       <div className="grid gap-6">
-        <section className="grid gap-4 md:grid-cols-4">
+        <section className="grid gap-4 md:grid-cols-5">
           {[
             ['Usuários', String(users.length)],
             ['Universos', String(universes.length)],
-            ['Mensagens no chat', String(comments)],
+            ['Chat geral', String(globalMessages)],
+            ['Chats privados', String(privateMessages)],
             ['Links públicos', String(shares)],
           ].map(([label, value]) => (
             <div key={label} className="panel rounded-[28px] p-5">
@@ -52,7 +54,7 @@ export default async function AdminPage() {
                     </div>
                     <div className="flex items-center gap-3">
                       <span className="rounded-full border border-amber-200/20 px-3 py-1 text-xs text-amber-100">{u.role}</span>
-                      <Button href={`/admin/users/${u.id}`} className="bg-white/5">Gerenciar</Button>
+                      <div className="flex gap-2"><Button href={`/users/${u.id}`} className="bg-white/5">Perfil</Button><Button href={`/admin/users/${u.id}`} className="bg-white/5">Gerenciar</Button></div>
                     </div>
                   </div>
                 </div>
