@@ -1,11 +1,13 @@
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { Hash, MessageSquare, Users, Compass, Sparkles } from 'lucide-react';
+import { Hash, MessageSquare, Users, Compass, Sparkles, SmilePlus, PlusCircle } from 'lucide-react';
 import { Shell } from '@/components/layout/Shell';
 import { getCurrentUser } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { Textarea } from '@/components/ui/Textarea';
 import { Button } from '@/components/ui/Button';
+
+const EMOJIS = ['👍', '🔥', '✨', '🖤'];
 
 export default async function ChatPage() {
   const user = await getCurrentUser();
@@ -13,7 +15,10 @@ export default async function ChatPage() {
 
   const [messages, members] = await Promise.all([
     prisma.globalMessage.findMany({
-      include: { author: { select: { id: true, name: true, avatarUrl: true, accentColor: true, bio: true } } },
+      include: {
+        author: { select: { id: true, name: true, avatarUrl: true, accentColor: true, bio: true } },
+        reactions: { select: { id: true, emoji: true, userId: true } },
+      },
       orderBy: { createdAt: 'asc' },
       take: 120,
     }),
@@ -68,16 +73,27 @@ export default async function ChatPage() {
 
         <section className="discord-main">
           <div className="discord-main-header">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 min-w-0">
               <div className="discord-hash-box"><Hash size={18} /></div>
-              <div>
-                <h1 className="text-lg font-semibold text-white">geral</h1>
-                <p className="text-sm text-slate-400">Conversa aberta sobre personagens, mundos e ideias novas.</p>
+              <div className="min-w-0">
+                <h1 className="truncate text-lg font-semibold text-white">geral</h1>
+                <p className="truncate text-sm text-slate-400">Conversa aberta sobre personagens, mundos e ideias novas.</p>
               </div>
             </div>
-            <div className="rounded-2xl border border-white/8 bg-white/5 px-3 py-2 text-sm text-slate-300">
-              {messages.length} mensagens
+            <div className="hidden md:flex items-center gap-2 rounded-2xl border border-white/8 bg-white/5 px-3 py-2 text-sm text-slate-300">
+              <Users size={14} />
+              comunidade aberta
             </div>
+          </div>
+
+          <div className="discord-mobile-strip lg:hidden">
+            <Link href="/dashboard" className="discord-chip">Painel</Link>
+            <Link href="/" className="discord-chip">Mundos</Link>
+            {members.slice(0, 5).map((person) => (
+              <Link key={person.id} href={`/chat/private/${person.id}`} className="discord-chip">
+                {person.name}
+              </Link>
+            ))}
           </div>
 
           <div className="discord-thread">
@@ -91,6 +107,11 @@ export default async function ChatPage() {
               messages.map((message, index) => {
                 const previous = messages[index - 1];
                 const grouped = previous && previous.author.id === message.author.id;
+                const reactionGroups = EMOJIS.map((emoji) => ({
+                  emoji,
+                  count: message.reactions.filter((reaction) => reaction.emoji === emoji).length,
+                  active: message.reactions.some((reaction) => reaction.emoji === emoji && reaction.userId === user.id),
+                })).filter((entry) => entry.count > 0);
 
                 return (
                   <article key={message.id} className={`discord-message ${grouped ? 'discord-message-grouped' : ''}`}>
@@ -117,9 +138,38 @@ export default async function ChatPage() {
                           <Link href={`/chat/private/${message.author.id}`} className="discord-inline-action">
                             chamar no privado
                           </Link>
+                          <Link href={`/users/${message.author.id}`} className="discord-inline-action">
+                            abrir perfil
+                          </Link>
                         </div>
                       )}
                       <p className="mt-1 whitespace-pre-wrap pr-4 text-[15px] leading-7 text-slate-200/88">{message.content}</p>
+                      <div className="mt-3 flex flex-wrap items-center gap-2">
+                        {reactionGroups.map((reaction) => (
+                          <form key={reaction.emoji} action="/api/chat/react" method="post">
+                            <input type="hidden" name="messageId" value={message.id} />
+                            <input type="hidden" name="emoji" value={reaction.emoji} />
+                            <input type="hidden" name="returnTo" value="/chat" />
+                            <button className={`discord-reaction ${reaction.active ? 'discord-reaction-active' : ''}`}>
+                              <span>{reaction.emoji}</span>
+                              <span>{reaction.count}</span>
+                            </button>
+                          </form>
+                        ))}
+                        <div className="discord-reaction-picker">
+                          {EMOJIS.filter((emoji) => !reactionGroups.some((item) => item.emoji === emoji)).map((emoji) => (
+                            <form key={emoji} action="/api/chat/react" method="post">
+                              <input type="hidden" name="messageId" value={message.id} />
+                              <input type="hidden" name="emoji" value={emoji} />
+                              <input type="hidden" name="returnTo" value="/chat" />
+                              <button className="discord-reaction-add" title={`Reagir com ${emoji}`}>
+                                <span>{emoji}</span>
+                              </button>
+                            </form>
+                          ))}
+                          <span className="discord-reaction-hint"><SmilePlus size={14} /> reagir</span>
+                        </div>
+                      </div>
                     </div>
                   </article>
                 );
@@ -130,9 +180,13 @@ export default async function ChatPage() {
           <div className="discord-composer-wrap">
             <form action="/api/chat" method="post" className="discord-composer">
               <input type="hidden" name="returnTo" value="/chat" />
+              <div className="flex items-center justify-between gap-3 text-xs text-slate-500">
+                <div className="flex items-center gap-2"><PlusCircle size={14} /> Mencione perfis, combine ideias e continue na DM quando quiser.</div>
+                <Link href="/chat" className="discord-inline-action hidden sm:inline-flex">atualizar conversa</Link>
+              </div>
               <Textarea name="content" placeholder="Enviar mensagem para #geral" required className="discord-textarea" />
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <p className="text-xs text-slate-500">Perfis e mensagens privadas estão a um clique do nome de cada pessoa.</p>
+                <p className="text-xs text-slate-500">No celular, use a faixa acima para trocar rápido entre painel, mundos e DMs.</p>
                 <div className="flex gap-3">
                   <Button href="/dashboard" className="bg-white/5 text-white/85">Painel</Button>
                   <Button type="submit" className="bg-sky-500 text-white border-sky-400/30">Enviar</Button>

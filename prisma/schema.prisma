@@ -27,23 +27,25 @@ enum LibraryType {
 }
 
 model User {
-  id                      String           @id @default(cuid())
+  id                      String                   @id @default(cuid())
   name                    String
-  email                   String           @unique
+  email                   String                   @unique
   passwordHash            String
-  role                    Role             @default(USER)
-  bio                     String           @default("")
+  role                    Role                     @default(USER)
+  bio                     String                   @default("")
   avatarUrl               String?
   bannerUrl               String?
-  accentColor             String           @default("#e9b86d")
+  accentColor             String                   @default("#e9b86d")
   universes               Universe[]
   comments                Comment[]
   logs                    AuditLog[]
   globalMessages          GlobalMessage[]
-  sentPrivateMessages     PrivateMessage[] @relation("SentMessages")
-  receivedPrivateMessages PrivateMessage[] @relation("ReceivedMessages")
-  createdAt               DateTime         @default(now())
-  updatedAt               DateTime         @updatedAt
+  globalMessageReactions  GlobalMessageReaction[]
+  sentPrivateMessages     PrivateMessage[]         @relation("SentMessages")
+  receivedPrivateMessages PrivateMessage[]         @relation("ReceivedMessages")
+  privateMessageReactions PrivateMessageReaction[]
+  createdAt               DateTime                 @default(now())
+  updatedAt               DateTime                 @updatedAt
 }
 
 model Universe {
@@ -137,23 +139,49 @@ model Comment {
 }
 
 model GlobalMessage {
-  id        String   @id @default(cuid())
+  id        String                  @id @default(cuid())
   authorId  String
-  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  author    User                    @relation(fields: [authorId], references: [id], onDelete: Cascade)
   content   String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  reactions GlobalMessageReaction[]
+  createdAt DateTime                @default(now())
+  updatedAt DateTime                @updatedAt
+}
+
+model GlobalMessageReaction {
+  id        String        @id @default(cuid())
+  messageId String
+  message   GlobalMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  emoji     String
+  createdAt DateTime      @default(now())
+
+  @@unique([messageId, userId, emoji])
 }
 
 model PrivateMessage {
-  id          String   @id @default(cuid())
+  id          String                   @id @default(cuid())
   senderId    String
   recipientId String
-  sender      User     @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
-  recipient   User     @relation("ReceivedMessages", fields: [recipientId], references: [id], onDelete: Cascade)
+  sender      User                     @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  recipient   User                     @relation("ReceivedMessages", fields: [recipientId], references: [id], onDelete: Cascade)
   content     String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  reactions   PrivateMessageReaction[]
+  createdAt   DateTime                 @default(now())
+  updatedAt   DateTime                 @updatedAt
+}
+
+model PrivateMessageReaction {
+  id        String         @id @default(cuid())
+  messageId String
+  message   PrivateMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  emoji     String
+  createdAt DateTime       @default(now())
+
+  @@unique([messageId, userId, emoji])
 }
 
 model AuditLog {

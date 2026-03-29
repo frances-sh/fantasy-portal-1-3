@@ -1,11 +1,13 @@
 import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, MessageSquare, UserRound } from 'lucide-react';
+import { ArrowLeft, MessageSquare, UserRound, SmilePlus } from 'lucide-react';
 import { Shell } from '@/components/layout/Shell';
 import { getCurrentUser } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { Textarea } from '@/components/ui/Textarea';
 import { Button } from '@/components/ui/Button';
+
+const EMOJIS = ['👍', '🔥', '✨', '🖤'];
 
 export default async function PrivateChatPage({ params }: { params: Promise<{ id: string }> }) {
   const currentUser = await getCurrentUser();
@@ -30,6 +32,7 @@ export default async function PrivateChatPage({ params }: { params: Promise<{ id
     include: {
       sender: { select: { id: true, name: true, avatarUrl: true } },
       recipient: { select: { id: true, name: true, avatarUrl: true } },
+      reactions: { select: { id: true, emoji: true, userId: true } },
     },
     orderBy: { createdAt: 'asc' },
     take: 120,
@@ -40,7 +43,7 @@ export default async function PrivateChatPage({ params }: { params: Promise<{ id
       <div className="discord-shell discord-shell-private">
         <section className="discord-main">
           <div className="discord-main-header border-b-white/8">
-            <div className="flex items-center gap-3">
+            <div className="flex min-w-0 items-center gap-3">
               <Link href="/chat" className="discord-hash-box">
                 <ArrowLeft size={18} />
               </Link>
@@ -52,15 +55,20 @@ export default async function PrivateChatPage({ params }: { params: Promise<{ id
                   <div className="discord-avatar-fallback">{partner.name[0]}</div>
                 )}
               </div>
-              <div>
-                <h1 className="text-lg font-semibold text-white">{partner.name}</h1>
-                <p className="text-sm text-slate-400">Conversa privada entre vocês dois.</p>
+              <div className="min-w-0">
+                <h1 className="truncate text-lg font-semibold text-white">{partner.name}</h1>
+                <p className="truncate text-sm text-slate-400">Conversa privada entre vocês dois.</p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="hidden md:flex items-center gap-2">
               <Button href={`/users/${partner.id}`} className="bg-white/5 text-white/85">Ver perfil</Button>
               <Button href="/chat" className="bg-sky-500/10 border-sky-400/20 text-sky-100">Chat geral</Button>
             </div>
+          </div>
+
+          <div className="discord-mobile-strip lg:hidden">
+            <Link href={`/users/${partner.id}`} className="discord-chip">Perfil de {partner.name}</Link>
+            <Link href="/chat" className="discord-chip">Voltar ao geral</Link>
           </div>
 
           <div className="discord-thread min-h-[480px]">
@@ -75,6 +83,11 @@ export default async function PrivateChatPage({ params }: { params: Promise<{ id
                 const mine = message.senderId === currentUser.id;
                 const previous = messages[index - 1];
                 const grouped = previous && previous.senderId === message.senderId;
+                const reactionGroups = EMOJIS.map((emoji) => ({
+                  emoji,
+                  count: message.reactions.filter((reaction) => reaction.emoji === emoji).length,
+                  active: message.reactions.some((reaction) => reaction.emoji === emoji && reaction.userId === currentUser.id),
+                })).filter((entry) => entry.count > 0);
 
                 return (
                   <article key={message.id} className={`discord-message ${grouped ? 'discord-message-grouped' : ''}`}>
@@ -96,10 +109,41 @@ export default async function PrivateChatPage({ params }: { params: Promise<{ id
                         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                           <span className="font-semibold text-white">{mine ? 'Você' : message.sender.name}</span>
                           <span className="text-xs text-slate-500">{new Date(message.createdAt).toLocaleString('pt-BR')}</span>
+                          {!mine && (
+                            <Link href={`/users/${partner.id}`} className="discord-inline-action">
+                              abrir perfil
+                            </Link>
+                          )}
                         </div>
                       )}
                       <div className={`mt-1 inline-block max-w-[820px] rounded-2xl px-4 py-3 text-[15px] leading-7 ${mine ? 'bg-sky-500/12 text-slate-100 ring-1 ring-sky-400/15' : 'bg-white/4 text-slate-200 ring-1 ring-white/6'}`}>
                         {message.content}
+                      </div>
+                      <div className="mt-3 flex flex-wrap items-center gap-2">
+                        {reactionGroups.map((reaction) => (
+                          <form key={reaction.emoji} action="/api/messages/react" method="post">
+                            <input type="hidden" name="messageId" value={message.id} />
+                            <input type="hidden" name="emoji" value={reaction.emoji} />
+                            <input type="hidden" name="returnTo" value={`/chat/private/${partner.id}`} />
+                            <button className={`discord-reaction ${reaction.active ? 'discord-reaction-active' : ''}`}>
+                              <span>{reaction.emoji}</span>
+                              <span>{reaction.count}</span>
+                            </button>
+                          </form>
+                        ))}
+                        <div className="discord-reaction-picker">
+                          {EMOJIS.filter((emoji) => !reactionGroups.some((item) => item.emoji === emoji)).map((emoji) => (
+                            <form key={emoji} action="/api/messages/react" method="post">
+                              <input type="hidden" name="messageId" value={message.id} />
+                              <input type="hidden" name="emoji" value={emoji} />
+                              <input type="hidden" name="returnTo" value={`/chat/private/${partner.id}`} />
+                              <button className="discord-reaction-add" title={`Reagir com ${emoji}`}>
+                                <span>{emoji}</span>
+                              </button>
+                            </form>
+                          ))}
+                          <span className="discord-reaction-hint"><SmilePlus size={14} /> reagir</span>
+                        </div>
                       </div>
                     </div>
                   </article>
@@ -112,6 +156,10 @@ export default async function PrivateChatPage({ params }: { params: Promise<{ id
             <form action="/api/messages" method="post" className="discord-composer">
               <input type="hidden" name="recipientId" value={partner.id} />
               <input type="hidden" name="returnTo" value={`/chat/private/${partner.id}`} />
+              <div className="flex items-center justify-between gap-3 text-xs text-slate-500">
+                <div>Use reações rápidas para responder sem quebrar o ritmo da conversa.</div>
+                <Link href={`/users/${partner.id}`} className="discord-inline-action hidden sm:inline-flex">perfil completo</Link>
+              </div>
               <Textarea name="content" placeholder={`Mensagem direta para ${partner.name}`} required className="discord-textarea" />
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <p className="text-xs text-slate-500">Você pode abrir o perfil dele para ver bio, estilo e mundos publicados.</p>
